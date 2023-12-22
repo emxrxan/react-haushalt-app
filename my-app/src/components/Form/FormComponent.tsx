@@ -1,32 +1,52 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useState } from "react";
+import { TextField, DatePicker, Dropdown, IDropdownOption, DefaultButton } from "@fluentui/react";
+import { calendarStrings } from "./DatePickerFormat";
 
 export const FormComponent: React.FC = () => {
+    const [einnahmeType, setEinnahmeType] = useState<string | number | undefined>(undefined)
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+
+    const einnahmeTypeDropdown: IDropdownOption[] = [
+        { key: 'einnahme', text: 'Einnahme' },
+        { key: 'ausgabe', text: 'Ausgabe' }
+    ]
+
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-        console.log(event)
+        if(selectedDate && einnahmeType){
+            console.log(selectedDate)
+            console.log(einnahmeType)
+            console.log(event)
+        } else {
+            alert('Bitte in allen Felde etwas eintragen!')
+        }
     }
-    return <form method="post" onSubmit={handleSubmit}>
-        <div>
-            <label htmlFor="titel">Titel</label>
-            <input type="text" name="titel" title="title"/>
-        </div>
-        <div>
-            <label htmlFor="betrag">Betrag</label>
-            <input type="number" step="0.01" name="betrag" title="betrag" placeholder="0.00 €"/>
-        </div>
-        <div>
-            <label htmlFor="einnahme">Einnahme</label>
-            <input type="radio" name="einnahmeType" title="einnahme" value={'einnahme'}/>
 
-            <label htmlFor="ausgabe">Ausgabe</label>
-            <input type="radio" name="einnahmeType" title="ausgabe" value={'ausgabe'}/>
-        </div>
-        <div>
-            <label htmlFor="datum">Datum</label>
-            <input type="date" name="datum" title="datum" placeholder="tt.mm.jjjj"/>
-        </div>
-        <div>
-            <button type="submit">Abschicken</button>
-        </div>
+    return <form method="post" onSubmit={handleSubmit}>
+
+        <TextField type="text" prefix="Titel" name="titel" required />
+
+        <TextField type="number" prefix="Betrag" name="betrag" required />
+
+        <Dropdown
+            options={einnahmeTypeDropdown}
+            dropdownWidth={300}
+            onChange={(event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => setEinnahmeType(option?.key)}
+        />
+
+        <DatePicker
+            placeholder="dd.mm.jjjj"
+            strings={calendarStrings} 
+            formatDate={(date) => date!!.toLocaleDateString('de-DE',{
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            })}
+            value={selectedDate}
+            onSelectDate={(date) =>  { date && setSelectedDate(date) }}
+            isRequired
+        />
+
+        <DefaultButton text="Abschicken" type="submit" />
     </form>
 }
