@@ -1,8 +1,12 @@
 import React, { FormEvent, useState } from "react";
 import { TextField, DatePicker, Dropdown, IDropdownOption, DefaultButton } from "@fluentui/react";
 import { calendarStrings } from "./DatePickerFormat";
+import { switchAlertError } from "../../AlertError/alertError";
+import { errorType } from "../../enums/errorType";
 
 export const FormComponent: React.FC = () => {
+    const [titel, setTitel] = useState<string | undefined>(undefined)
+    const [betrag, setBetrag] = useState<string | undefined>(undefined)
     const [einnahmeType, setEinnahmeType] = useState<string | number | undefined>(undefined)
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
 
@@ -13,20 +17,38 @@ export const FormComponent: React.FC = () => {
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if(selectedDate && einnahmeType){
-            console.log(selectedDate)
-            console.log(einnahmeType)
-            console.log(event)
-        } else {
-            alert('Bitte in allen Felde etwas eintragen!')
+        switch(undefined){
+            case titel: return switchAlertError(errorType.RequiredTitel)
+            case betrag: return switchAlertError(errorType.RequiredBetrag)
+            case checkBetrag(): return switchAlertError(errorType.RequiredBetrag)
+            case selectedDate: return switchAlertError(errorType.RequiredDate)
+            case einnahmeType: return switchAlertError(errorType.RequiredEinnahmeType)
+            default: return null
         }
+    }
+
+    const checkBetrag = () :boolean | undefined =>  {
+        const checkEuroRegEx = /^\d*.(6[1-9]|7[0-9]|8[0-9]|9[0-9]|\d{3,})$/    
+        return betrag?.match(checkEuroRegEx) ? undefined : true
     }
 
     return <form method="post" onSubmit={handleSubmit}>
 
-        <TextField type="text" prefix="Titel" name="titel" required />
+        <TextField 
+            type="text" 
+            prefix="Titel" 
+            name="titel" 
+            onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+                (newValue === "") ? setTitel(undefined) : setTitel(newValue)
+            }}
+        />
 
-        <TextField type="number" prefix="Betrag" name="betrag" required />
+        <TextField 
+            type="number" 
+            prefix="Betrag" 
+            name="betrag" 
+            step="0.01"
+            onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => setBetrag(newValue)} />
 
         <Dropdown
             options={einnahmeTypeDropdown}
