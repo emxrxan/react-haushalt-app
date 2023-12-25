@@ -66,7 +66,6 @@ export const FormComponent: React.FC = () => {
             })}
             value={selectedDate}
             onSelectDate={(date) =>  { date && setSelectedDate(date) }}
-            isRequired
         />
 
         <DefaultButton text="Abschicken" type="submit" />
