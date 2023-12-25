@@ -3,12 +3,19 @@ import { TextField, DatePicker, Dropdown, IDropdownOption, DefaultButton } from 
 import { calendarStrings } from "./DatePickerFormat";
 import { switchAlertError } from "../../AlertError/alertError";
 import { errorType } from "../../enums/errorType";
+import { eintragType } from "../../interface/eintragType";
+import { Eintrag } from "../../class/Eintrag";
 
-export const FormComponent: React.FC = () => {
-    const [titel, setTitel] = useState<string | undefined>(undefined)
-    const [betrag, setBetrag] = useState<string | undefined>(undefined)
-    const [einnahmeType, setEinnahmeType] = useState<string | number | undefined>(undefined)
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+interface IFormType {
+    setNewEintrag: (eintrag:eintragType) => void
+}
+
+export const FormComponent: React.FC<IFormType> = (props) => {
+    const { setNewEintrag } = props
+    const [titel, setTitel] = useState<string>()
+    const [betrag, setBetrag] = useState<number>()
+    const [einnahmeType, setEinnahmeType] = useState<string>()
+    const [selectedDate, setSelectedDate] = useState<Date>()
 
     const einnahmeTypeDropdown: IDropdownOption[] = [
         { key: 'einnahme', text: 'Einnahme' },
@@ -21,15 +28,21 @@ export const FormComponent: React.FC = () => {
             case titel: return switchAlertError(errorType.RequiredTitel)
             case betrag: return switchAlertError(errorType.RequiredBetrag)
             case checkBetrag(): return switchAlertError(errorType.RequiredBetrag)
-            case selectedDate: return switchAlertError(errorType.RequiredDate)
             case einnahmeType: return switchAlertError(errorType.RequiredEinnahmeType)
-            default: return null
+            case selectedDate: return switchAlertError(errorType.RequiredDate)
+            default: return setNewEintrag({
+                titel: titel as string,
+                betrag: betrag as number,
+                einnhameType: einnahmeType as string,
+                date: selectedDate as Date
+            })
         }
     }
 
     const checkBetrag = () :boolean | undefined =>  {
-        const checkEuroRegEx = /^\d*.(6[1-9]|7[0-9]|8[0-9]|9[0-9]|\d{3,})$/    
-        return betrag?.match(checkEuroRegEx) ? undefined : true
+        const checkEuroRegEx = /^\d*.(\d{3,})$/   
+        const betragString = betrag?.toString()
+        return betragString?.match(checkEuroRegEx) ? undefined : true
     }
 
     return <form method="post" onSubmit={handleSubmit}>
@@ -39,7 +52,7 @@ export const FormComponent: React.FC = () => {
             prefix="Titel" 
             name="titel" 
             onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
-                (newValue === "") ? setTitel(undefined) : setTitel(newValue)
+                (newValue === undefined) ? setTitel(undefined) : setTitel(newValue)
             }}
         />
 
@@ -48,12 +61,17 @@ export const FormComponent: React.FC = () => {
             prefix="Betrag" 
             name="betrag" 
             step="0.01"
-            onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => setBetrag(newValue)} />
+            onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+                (newValue === undefined) ? setBetrag(undefined) : setBetrag(parseFloat(newValue))
+            }}
+        />
 
         <Dropdown
             options={einnahmeTypeDropdown}
             dropdownWidth={300}
-            onChange={(event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => setEinnahmeType(option?.key)}
+            onChange={(event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+                (option?.text === undefined) ? setEinnahmeType(undefined) : setEinnahmeType(option.text)
+            }}
         />
 
         <DatePicker
