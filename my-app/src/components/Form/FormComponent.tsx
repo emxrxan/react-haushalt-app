@@ -12,6 +12,7 @@ interface IFormType {
 
 export const FormComponent: React.FC<IFormType> = (props) => {
     const { setNewEintrag } = props
+    const [getError, setGetError] = useState<boolean>(false)
     const [titel, setTitel] = useState<string>()
     const [betrag, setBetrag] = useState<number>()
     const [einnahmeType, setEinnahmeType] = useState<string>()
@@ -25,11 +26,21 @@ export const FormComponent: React.FC<IFormType> = (props) => {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         switch(undefined){
-            case titel: return switchAlertError(errorType.RequiredTitel)
-            case betrag: return switchAlertError(errorType.RequiredBetrag)
-            case checkBetrag(): return switchAlertError(errorType.RequiredBetrag)
-            case einnahmeType: return switchAlertError(errorType.RequiredEinnahmeType)
-            case selectedDate: return switchAlertError(errorType.RequiredDate)
+            case titel: 
+                setGetError(true)
+                return switchAlertError(errorType.RequiredTitel)
+            case betrag: 
+                setGetError(true)
+                return switchAlertError(errorType.RequiredBetrag)
+            case checkBetrag(): 
+                setGetError(true)
+                return switchAlertError(errorType.RequiredBetrag)
+            case einnahmeType: 
+                setGetError(true)
+                return switchAlertError(errorType.RequiredEinnahmeType)
+            case selectedDate:
+                setGetError(true)
+                return switchAlertError(errorType.RequiredDate)
             default: return setNewEintrag({
                 titel: titel as string,
                 betrag: betrag as number,
@@ -47,13 +58,17 @@ export const FormComponent: React.FC<IFormType> = (props) => {
 
     return <form method="post" onSubmit={handleSubmit}>
 
-        <TextField 
+        <TextField
             type="text" 
             prefix="Titel" 
             name="titel" 
             onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
-                (newValue === undefined) ? setTitel(undefined) : setTitel(newValue)
+                (newValue === undefined || newValue === "") ? setTitel(undefined) : setTitel(newValue)
             }}
+            errorMessage={(!titel && getError) ? "Error" : undefined}
+            styles={{errorMessage: {
+                display: 'none'
+            }}}
         />
 
         <TextField 
@@ -62,16 +77,24 @@ export const FormComponent: React.FC<IFormType> = (props) => {
             name="betrag" 
             step="0.01"
             onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
-                (newValue === undefined) ? setBetrag(undefined) : setBetrag(parseFloat(newValue))
+                (newValue === undefined || newValue === "") ? setBetrag(undefined) : setBetrag(parseFloat(newValue))
             }}
+            errorMessage={(!betrag && getError) ? "Error" : undefined}
+            styles={{errorMessage: {
+                display: 'none'
+            }}}
         />
 
         <Dropdown
             options={einnahmeTypeDropdown}
             dropdownWidth={300}
             onChange={(event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-                (option?.text === undefined) ? setEinnahmeType(undefined) : setEinnahmeType(option.text)
+                (option?.text === undefined || option?.text === "") ? setEinnahmeType(undefined) : setEinnahmeType(option.text)
             }}
+            errorMessage={(!einnahmeType && getError) ? "Error" : undefined}
+            styles={{errorMessage: {
+                display: 'none'
+            }}}
         />
 
         <DatePicker
@@ -84,6 +107,12 @@ export const FormComponent: React.FC<IFormType> = (props) => {
             })}
             value={selectedDate}
             onSelectDate={(date) =>  { date && setSelectedDate(date) }}
+            textField={{
+                errorMessage: (!selectedDate && getError) ? "Error" : undefined,
+                styles: {
+                    errorMessage: {display: 'none'}
+                }
+            }}
         />
 
         <DefaultButton text="Abschicken" type="submit" />
